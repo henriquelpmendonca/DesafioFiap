@@ -1,0 +1,97 @@
+﻿@page "/CadastrarPedido/{Publico:int}"
+@inject NavigationManager NavigationManager
+@inject HttpClient http
+@using GSVBlazorApp.ViewModels
+
+<h2>Novo Pedido</h2>
+<hr />
+
+@if (!(response == null))
+{
+    @if (!MessageError.Equals(""))
+    {
+        <div class="alert alert-danger" id="alertError" role="alert">
+            @MessageError
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-success" id="alertSucess" role="alert">
+            @MessageSucess
+        </div>
+    }
+}
+
+
+<EditForm Model="@pedido" OnValidSubmit="Cadastrar">
+    <DataAnnotationsValidator />
+    <div class="row">
+        <div class="col-md-8">
+            <div class="form-group">
+                <label for="Nome" class="control-label">Nome</label>
+                <InputText class="form-control" id="txtNome" @bind-Value="@pedido.Nome" />
+                <ValidationMessage For="@(()=> pedido.Nome)" />
+            </div>
+            <div class="form-group">
+                <label for="Email" class="control-label">E-mail</label>
+                <InputText class="form-control" id="txtEmail" @bind-Value="@pedido.Email" />
+                <ValidationMessage For="@(()=> pedido.Email)" />
+            </div>
+            <div class="form-group">
+                <label for="TipoAssinatura" class="control-label">Tipo Assinatura</label>
+                <InputSelect for="TipoAssinatura" class="form-control" id="drpTipoAssinatura" @bind-Value="pedido.TipoAssinatura">
+                    <option value="Gold">Gold</option>
+                    <option value="Silver">Silver</option>
+                    <option value="Normal">Normal</option>
+                    <option value="Normal" selected="selected">Selecione</option>
+                </InputSelect>
+                <ValidationMessage For="@(()=> pedido.TipoAssinatura)" />
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <input type="submit" class="btn btn-sm btn-primary" id="btnSalvarPedido" value="Salvar" />
+                @if (Publico.Equals(1))
+                {<a href="/" class="btn btn-sm btn-light">Voltar</a>}
+                else
+                { <input type="button" class="btn btn-sm btn-light" id="btnCancelarPedido" @onclick="@Cancela" value="Voltar" />}
+
+            </div>
+        </div>
+    </div>
+</EditForm>
+@code {
+    [Parameter]
+    public int Publico { get; set; }
+    vmPedido pedido = new vmPedido();
+    vmResponse response = null;
+    string MessageError = "";
+    string MessageSucess = "";
+
+    protected async Task Cadastrar()
+    {
+
+        var url = "https://localhost:44363/Pedido/CadastrarPedido";
+        pedido.dataSolicitacao = DateTime.Now;
+        pedido.Status = true;
+        response = await http.PostJsonAsync<vmResponse>(url, pedido);
+        VerificaResponse();
+    }
+    void Cancela()
+    {
+        NavigationManager.NavigateTo("Pedidos");
+    }
+
+    bool VerificaResponse()
+    {
+        if (response.StatusRequest)
+            MessageSucess = response.Mensagem;
+        else
+            MessageError = response.Mensagem;
+
+
+        return response.StatusRequest;
+    }
+} 

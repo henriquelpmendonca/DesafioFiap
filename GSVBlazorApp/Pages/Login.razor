@@ -1,0 +1,72 @@
+﻿@page "/Login"
+@inject NavigationManager NavigationManager
+@inject HttpClient http
+@using GSVBlazorApp.ViewModels
+
+@if (!(response == null))
+{
+    @if (!MessageError.Equals(""))
+    {
+        <div class="alert alert-danger" role="alert">
+            @MessageError
+        </div>
+    }
+}
+
+
+
+
+<center>
+    <div class=" container text-center">
+        <br />
+        <br />
+        <div class="row">
+            <div class="col-lg-12">
+                <EditForm Model="@login" OnValidSubmit="Logar">
+                    <DataAnnotationsValidator />
+                    <div class="col-lg-12">
+                        <h2 class="h3 mb-3 font-weight-normal">Acessar Restrito</h2>
+                    </div>
+                    <br />
+                    <center>
+                        <div class="col-lg-5">
+
+                            <InputText class="form-control" id="txtUsuario" placeholder="Usuário" @bind-Value="@login.Usuario" />
+                            <ValidationMessage For="@(()=> login.Usuario)" />
+
+                            <InputText class="form-control" id="txtPassword" placeholder="Senha" @bind-Value="@login.Senha" />
+                            <ValidationMessage For="@(()=> login.Senha)" />
+                            <br />
+                            <input type="submit" class="btn btn-sm btn-primary bg-gradient-primary btn-block" value="Login" />
+                        </div>
+                    </center>
+                    <div class="col-lg-12">
+                        <p class="mt-5 mb-3 text-muted">© 2020</p>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</center>
+
+@code {
+    vmLogin login = new vmLogin();
+    vmResponse response = null;
+    string MessageError = "";
+
+    protected async Task Logar()
+    {
+        var url = "https://localhost:44363/Login/AutenticarUsuario";
+        response = await http.PostJsonAsync<vmResponse>(url, login);
+
+        if (response.StatusRequest)
+        {
+            NavigationManager.NavigateTo("Pedidos");
+        }
+        else
+        {
+            MessageError = response.Mensagem;
+        }
+    }
+
+}

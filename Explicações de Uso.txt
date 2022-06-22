@@ -1,0 +1,5 @@
+1 - Favor utilizar VS2019
+2 - Scripts estao no arquivo ScriptBanco - nele eu ja cadastro um login para acessa a tela de login User:admin Pass:123
+3 - Apresentação na mesma pasta.
+4 - Verificar Conection string no Json para colocar o nome do servidor!
+

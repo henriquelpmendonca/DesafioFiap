@@ -1,0 +1,71 @@
+﻿@page "/EditarPedido/{PedidoId:int}"
+@inject NavigationManager NavigationManager
+@inject HttpClient http
+@using GSVBlazorApp.ViewModels
+
+<h2>Editar Pedido</h2>
+<hr />
+<EditForm Model="@pedido" OnValidSubmit="Atualizar">
+    <DataAnnotationsValidator />
+    <div class="row">
+        <div class="col-md-8">
+            <div class="form-group">
+                <label for="Nome" class="control-label">Nome</label>
+                <InputText class="form-control" id="txtNome" @bind-Value="@pedido.Nome" />
+                <ValidationMessage For="@(()=> pedido.Nome)" />
+            </div>
+            <div class="form-group">
+                <label for="Email" class="control-label">E-mail</label>
+                <InputText class="form-control" id="txtEmail" @bind-Value="@pedido.Email" />
+                <ValidationMessage For="@(()=> pedido.Email)" />
+            </div>
+            <div class="form-group">
+                <label for="DataSolicitacao" class="control-label">Data da Solicitação</label>
+                <InputDate class="form-control" id="txtdataSolicitacao" @bind-Value="@pedido.dataSolicitacao" />
+                <ValidationMessage For="@(()=> pedido.dataSolicitacao)" />
+            </div>
+            <div class="form-group">
+                <label for="TipoAssinatura" class="control-label">Tipo Assinatura</label>
+                <InputSelect for="TipoAssinatura" class="form-control" id="drpTipoAssinatura" @bind-Value="pedido.TipoAssinatura">
+                    <option value="Gold">Gold</option>
+                    <option value="Silver">Silver</option>
+                    <option value="Normal">Normal</option>
+                    <option value="Normal" selected="selected">Selecione</option>
+                </InputSelect>
+                <ValidationMessage For="@(()=> pedido.TipoAssinatura)" />
+            </div>
+            <div class="form-group">
+                <label for="Status" class="control-label">Ativo</label>
+                <input type="checkbox" for="Status" id="txtStatus" @bind="@pedido.Status" />
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <input type="submit" class="btn btn-primary" id="btnSalvarPedido" value="Salvar" />
+                <input type="button" class="btn" id="btnCancelarPedido" @onclick="@Cancela" value="Cancelar" />
+            </div>
+        </div>
+    </div>
+</EditForm>
+@code {
+    [Parameter]
+    public int PedidoId { get; set; }
+    vmPedido pedido = new vmPedido();
+    protected override async Task OnInitializedAsync()
+    {
+        var url = $"https://localhost:44363/Pedido/ListarPedidos/{PedidoId}";
+        pedido = await http.GetJsonAsync<vmPedido>(url);
+    }
+    protected async Task Atualizar()
+    {
+        var url = "https://localhost:44363/Pedido/AtualizarPedido";
+        await http.PostJsonAsync(url, pedido);
+        NavigationManager.NavigateTo("Pedidos");
+    }
+    void Cancela()
+    {
+        NavigationManager.NavigateTo("Pedidos");
+    }
+} 

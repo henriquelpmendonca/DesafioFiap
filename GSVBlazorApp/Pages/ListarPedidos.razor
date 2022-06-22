@@ -1,0 +1,114 @@
+﻿@page "/pedidos"
+@inject HttpClient http
+@inject NavigationManager NavigationManager
+@using GSVBlazorApp.ViewModels
+
+<h2>Pedidos</h2>
+<p>
+    <a href="/CadastrarPedido/2">Novo Pedido</a>
+</p>
+@if (pedidos == null)
+{
+    <p>Nenhum Pedido Cadastrado</p>
+}
+else
+{
+<div class="row">
+
+    <div class="col-sm-4">
+        <input type="text" class="form-control" @bind="@FiltroNome" placeholder="Nome" />
+    </div>
+
+    <div class="col-sm-4">
+        <input type="text" class="form-control" @bind="@FiltroEmail" placeholder="Email" />
+    </div>
+
+    <div class="col-sm-2">
+        <select class="form-control" @bind="@FiltroStatus">
+            <option selected="selected">Selecione</option>
+            <option value="true">Ativo</option>
+            <option value="false">Inativo</option>
+        </select>
+    </div>
+
+
+    <div class="col-sm-2">
+        <input type="button" class="btn btn-sm btn-info" id="btnFiltrarRegistros" @onclick="@FiltrarRegistros" value="Filtrar" />
+    </div>
+
+</div>
+
+    <br />
+    <table class='table' id="gridPedidos">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Assinatura</th>
+                <th>dataSolicitacao</th>
+                <th>Status</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var pedido in pedidos)
+            {
+                <tr>
+                    <td>@pedido.Nome</td>
+                    <td>@pedido.Email</td>
+                    <td>@pedido.TipoAssinatura</td>
+                    <td>@pedido.dataSolicitacao</td>
+                    @if (pedido.Status)
+                    {
+                        <td>
+                            Ativo
+                        </td>
+                    }
+                    else
+                    {
+                        <td>
+                            Inativo
+                        </td>
+                    }
+                    <td>
+                        <a href='/EditarPedido/@pedido.PedidoId' id="btnEditarPedido" class="btn btn-sm btn-primary">Editar</a>
+                        <input type="button" class="btn btn-sm btn-danger" id="btnExcluirPedido" @onclick="@(() => ExcluirPedido(@pedido.PedidoId))" value="X" />
+
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+
+    public string FiltroNome;
+    public string FiltroEmail;
+    public string FiltroStatus;
+    IEnumerable<vmPedido> pedidos;
+    IEnumerable<vmPedido> pedidosFiltrados;
+    protected override async Task OnInitializedAsync()
+    {
+        var url = "https://localhost:44363/Pedido/ListarPedidos";
+        pedidos = await http.GetJsonAsync<IEnumerable<vmPedido>>(url);
+    }
+
+    protected async Task ExcluirPedido(int id)
+    {
+        var url = $"https://localhost:44363/Pedido/DeletaPedido/{id}";
+        await http.DeleteAsync(url);
+        await OnInitializedAsync();
+    }
+
+    async Task FiltrarRegistros()
+    {
+        await OnInitializedAsync();
+        if (FiltroNome != null) pedidos = pedidos.ToList().FindAll(x => x.Nome.Trim().ToLower().Contains(FiltroNome.Trim().ToLower()));
+        if (FiltroEmail != null) pedidos = pedidos.ToList().FindAll(x => x.Email.Trim().ToLower().Contains(FiltroEmail.Trim().ToLower()));
+        if (FiltroStatus != null && FiltroStatus != "Selecione" ) pedidos = pedidos.ToList().FindAll(x => x.Status == Convert.ToBoolean(FiltroStatus));
+        
+    }
+
+
+}
